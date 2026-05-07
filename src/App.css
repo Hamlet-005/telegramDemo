@@ -182,3 +182,17 @@
     border-right-color: var(--border);
   }
 }
+
+
+.chatItem {
+  background-color: white;
+  border-bottom: 1px solid #eee;
+}
+
+.chatItem.active {
+  background-color: #85FFF8;
+}
+
+.chatItem:hover:not(.active) {
+  background-color: #e9e9e9;
+}
