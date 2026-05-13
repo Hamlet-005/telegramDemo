@@ -1,289 +1,397 @@
-import { useState } from "react"
-import "./App.css"
+import { useEffect, useRef, useState } from "react";
+import "./App.css";
+import styled from "styled-components";
+
+const Main = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100svh;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+`;
+
+const LeftPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 30%;
+  background-color: white;
+  overflow-x: auto;
+`;
+
+const LeftHeader = styled.div`
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  padding: 20px 40px 60px 30px;
+`;
+
+const ChatList = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+`;
+
+const Icon = styled.div`
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: orange;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+`;
+
+const ChatInterface = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 10px;
+  min-width: 0;
+`;
+
+const ChatTitle = styled.div`
+  margin-left: 7px;
+`;
+
+const LastMessageStyle = styled.div`
+  font-size: 14px;
+  color: #575757;
+  margin-left: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+`;
+
+const ChatItem = styled.p`
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: left;
+  height: 60px;
+  align-items: center;
+  padding: 0px 10px;
+  gap: 10px;
+`;
+
+const LeftHelp = styled.h4`
+  margin: 0;
+`;
+
+const SearchChats = styled.input`
+  width: 100%;
+  border-radius: 8px;
+  padding: 17px 12px;
+  box-sizing: border-box;
+  outline: none;
+  border: 1px solid grey;
+  font-size: 17px;
+  line-height: 17px;
+  margin-top: 20px;
+`;
+
+
+const RightPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  background-color: #BFFFBD;
+`;
+
+const TitleDirection = styled.div`
+  background-color: white;
+  border-bottom: 1px solid #EBEBEB;
+  border-left: 1px solid #EBEBEB;
+  padding: 20px 40px;
+`;
+
+const Title = styled.h3`
+  margin: 0;
+  color: black;
+`;
+
+const ForText = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  color: black;
+  text-align: left;
+  padding: 20px;
+`;
+
+const MessageStyle = styled.div`
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+`;
+
+const SelectChat = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+`;
+
+const InputDirection = styled.div`
+  display: flex;
+  position: relative;
+  background-color: white;
+  border-top: 1px solid #EBEBEB;
+  padding: 18px 24px;
+`;
+
+const InputDirectionRule = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+`;
+
+const TypeMessage = styled.input`
+  flex: 1;
+  height: 58px;
+  background-color: white;
+  border-radius: 18px;
+  padding: 0px 22px;
+  outline: none;
+  border: 1px solid #DADADA;
+  font-size: 18px;
+`;
+
+const Message = styled.p<{ sender: string }>`
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px;
+  max-width: 40%;
+  overflow-wrap: break-word;
+
+  align-self: ${(props) =>
+    props.sender === "me" ? "end" : "start"};
+
+  background-color: ${(props) =>
+    props.sender === "me"
+      ? "#DFF0FF"
+      : "white"};
+`;
+
+const SendButton = styled.button`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background-color: #2F80FF;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+
 
 function App() {
-  // const [messages, setMessages] = useState([])
-  const [chats, setChats] = useState([
-    {id: 1, name: "Miqo", messages: [{ text: "Barev", sender: "other" },
-                                      { text: "Vonc es?", sender: "me" }]},
-    {id: 2, name: "Hakob", messages: []},
-    {id: 3, name: "Meruzhan", messages: []},
-    {id: 4, name: "Manvel", messages: []},
-    {id: 5, name: "Vardan", messages: []},
-    {id: 6, name: "Hamlet", messages: []},
-    {id: 7, name: "Hayk", messages: []},
-    {id: 8, name: "Boyov", messages: []},
-    {id: 9, name: "Vahram", messages: []},
-    {id: 10, name: "Suro", messages: []},
-    {id: 11, name: "Yarman", messages: []},
-    {id: 12, name: "Susanna", messages: []},
-    {id: 13, name: "Silva", messages: []},
-    {id: 14, name: "Nrane", messages: []},
-    {id: 15, name: "Tigran", messages: []},
-    {id: 16, name: "Ani", messages: []}
-  ])
-  const [activeChatId, setActiveChatId] = useState(null)
-  const [text, setText] = useState("")
-  const [searchChat, setSearchChat] = useState("")
 
-  const activeChat = chats.find((val) => val.id === activeChatId)
+  const [chats, setChats] = useState([
+    {
+      id: 1,
+      name: "Miqo",
+      messages: [
+        { text: "Barev", sender: "other" },
+        { text: "Vonc es?", sender: "me" },
+      ],
+    },
+
+    { id: 2, name: "Hakob", messages: [] },
+    { id: 3, name: "Meruzhan", messages: [] },
+    { id: 4, name: "Manvel", messages: [] },
+    { id: 5, name: "Vardan", messages: [] },
+    { id: 6, name: "Hamlet", messages: [] },
+    { id: 7, name: "Hayk", messages: [] },
+    { id: 8, name: "Boyov", messages: [] },
+    { id: 9, name: "Vahram", messages: [] },
+    { id: 10, name: "Suro", messages: [] },
+    { id: 11, name: "Yarman", messages: [] },
+    { id: 12, name: "Susanna", messages: [] },
+    { id: 13, name: "Silva", messages: [] },
+    { id: 14, name: "Nrane", messages: [] },
+    { id: 15, name: "Tigran", messages: [] },
+    { id: 16, name: "Ani", messages: [] },
+    { id: 17, name: "Mama", messages: [] },
+    { id: 18, name: "Papa", messages: [] },
+  ]);
+
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [text, setText] = useState("");
+  const [searchChat, setSearchChat] = useState("");
+
+  const activeChat = chats.find((val) => val.id === activeChatId);
 
   const filteredChats = chats.filter((val) => {
-    return val.name.toLowerCase().includes(searchChat.toLowerCase())
-  })
+    return val.name.toLowerCase().includes(searchChat.toLowerCase());
+  });
 
-  function send(){
-    if(text.trim() === ""){
-      return
-    }
-    // setMessages([...messages, text])
-    // setChats(
-    //   chats.map((val) => {
-    //     if(val.id === activeChatId){
-    //       return {...val, messages: [...val.messages, text]}
-    //     }
-    //     return val
-    //   })
-    // )
-    const currentChat = chats.find((val) => val.id === activeChatId)
+  const endScroll = useRef(null);
 
-    if(!currentChat){
-      return
+  useEffect(() => {
+    endScroll.current?.scrollIntoView();
+  }, [activeChat?.messages]);
+
+  function send() {
+    if (text.trim() === "") {
+      return;
     }
 
-    const updatedChat = {...currentChat, messages: [...currentChat.messages, { text: text, sender: "me" }]}
-    const otherChats = chats.filter((val) => val.id !== activeChatId)
+    const currentChat = chats.find((val) => val.id === activeChatId);
 
-    setChats([updatedChat, ...otherChats])
+    if (!currentChat) {
+      return;
+    }
 
-    setText("")
+    const updatedChat = {
+      ...currentChat,
+      messages: [
+        ...currentChat.messages,
+        {
+          text: text,
+          sender: "me",
+        },
+      ],
+    };
+
+    const otherChats = chats.filter(
+      (val) => val.id !== activeChatId
+    );
+
+    setChats([updatedChat, ...otherChats]);
+
+    setText("");
   }
-  
+
   return (
-    <div className="main"
-      style={{
-          display: "flex",
-          width: "100%",
-          height: "100svh",
-          fontFamily: "Arial, Helvetica, sans-serif",
-          fontSize: 18
-        }}>
+    <Main>
+      <LeftPanel>
+        <LeftHeader>
+          <h2>Chats</h2>
 
+          <SearchChats
+            placeholder="Search chats"
+            value={searchChat}
+            onChange={(evt) => {
+              setSearchChat(evt.target.value);
+            }}
+          />
 
-          <div className="left" style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "30%",
-            backgroundColor: "white",
-            overflowX: "auto"
-          }}>
-
-          <div className="leftHeader" style={{
-              margin: 0,
-              borderBottom: "1px solid #eee",
-              textAlign: "left",
-              padding: "20px 40px 60px 30px"
-            }}>
-            <h2>Chats</h2>
-
-            <input placeholder="Search chats" 
-              value={searchChat}
-              onChange={(evt) => {
-                setSearchChat(evt.target.value)
-              }}
-            style={{
-              width: "100%",
-              borderRadius: "8px",
-              padding: "17px 12px",
-              boxSizing: "border-box",
-              outline: "none",
-              border: "1px solid grey",
-              fontSize: "17px",
-              lineHeight: "17px",
-              marginTop: "20px"
-            }}/>
-          </div>
-          
-          <div className="chatList" style={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: "auto"
-              }}>
-            {/* {messages[messages.length - 1]} */}
+        </LeftHeader>
+          <ChatList>
             {filteredChats.map((val) => {
-              return <p className={activeChatId === val.id ? "chatItem active" : "chatItem"}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  cursor: "pointer",
-                  color: "black",
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  textAlign: "left",
-                  height: "60px",
-                  alignItems: "center",
-                  padding: "0 10px",
-                  gap: "10px"
-                }}
-                key = {val.id}
-                onClick={() => {setActiveChatId(val.id)}}
-              >
-
-                <div style={{
-                  width: "45px",
-                  height: "45px",
-                  borderRadius: "50%",
-                  backgroundColor: "orange",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexShrink: 0
-                }}>
-                  {val.name[0]}
-                </div>
-
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  marginLeft: "10px",
-                  minWidth: 0
-                }}>
-
-                <div style={{
-                  marginLeft: "7px",
-                }}>
-                  <h4 style={{margin: 0}}>{val.name}</h4>
-                </div>
-                
-                <div style={{
-                  fontSize: "14px",
-                  color: "#575757",
-                  marginLeft: "7px",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                  maxWidth: "100%"
-                }}>
-                  {val.messages[val.messages.length - 1]?.text}
-                </div>
-
-                </div>
-              </p>
-            })}
-            </div>
-          </div>
-
-          <div className="right" style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "70%",
-            backgroundColor: "#BFFFBD",
-          }}>
-
-            {activeChat && <div style={{
-              backgroundColor: "white",
-              borderBottom: "1px solid #EBEBEB",
-              borderLeft: "1px solid #EBEBEB",
-              padding: "20px 40px"
-            }}><h3 style={{margin: 0,
-                           color: "black",
-            }}>{activeChat ? activeChat.name : ""}</h3>
-            </div>}
-
-            <div className="forText" style={{
-              flex: 1,
-              minHeight: 0,
-              // display: "flex",
-              // justifyContent: "flex-end",
-              // flexDirection: "column",
-              overflowY: "auto",
-              color: "black",
-              textAlign: "left",
-              padding: "20px",
-            }}>
-
-            {activeChat ? (
-              <div style={{
-                minHeight: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end"
-              }}>
-                {activeChat.messages.map((val, index) => {
-                  return <p style={{
-                    padding: "10px",
-                    borderRadius: "5px",
-                    margin: "10px",
-                    maxWidth: "40%",
-                    alignSelf: val.sender === "me" ? "end" : "start",
-                    backgroundColor: val.sender === "me" ? "#DFF0FF" : "white",
-                    overflowWrap: "break-word"
-                  }}
-                    key={index}>{val.text}</p>
-                })}
-              </div>
-            ) : <div style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%"
-            }}>Select a chat to start messaging</div>}
-            </div>
-
-            <div className="writeMessages">
-              <div style={{
-                display: "flex",
-                position: "relative"
-              }}>
-              
-
-                <input placeholder="Type a message..." disabled = {!activeChat} style={{
-                  width: "100%",
-                  height: "40px",
-                  backgroundColor: "white",
-                  paddingRight: "60px",
-                  paddingLeft: "17px",
-                  outline: "none",
-                  border: "1px solid #F5F5F5",
-                  fontSize: "18px",
-                  lineHeight: "18px",
-                }}
-                  value={text}
-                  onChange={(evt) => {
-                    setText(evt.target.value)
-                  }}
-                  onKeyDown={(evt) => {
-                    if(evt.key === "Enter"){
-                      send()
-                    }
-                  }}
-                />
-
-                <button style={{
-                  position: "absolute",
-                  right: "5px",
-                  bottom: "8px",
-                  borderRadius: "50%",
-                  backgroundColor: "#00DDFF",
-                  color: "black",
-                  fontSize: "100%"
-                }}
-                  disabled = {!activeChat}
+              return (
+                <ChatItem
+                  className={activeChatId === val.id ? "chatItem active" : "chatItem"}
+                  key={val.id}
                   onClick={() => {
-                    send()
-                  }}>➤</button>
+                    setActiveChatId(val.id);
+                  }}
+                >
+                  <Icon>
+                    {val.name[0]}
+                  </Icon>
 
-              </div>
+                  <ChatInterface>
+                    <ChatTitle>
+                      <LeftHelp>
+                        {val.name}
+                      </LeftHelp>
+                    </ChatTitle>
 
-            </div>
+                    <LastMessageStyle>
+                      {
+                        val.messages[
+                          val.messages.length - 1
+                        ]?.text
+                      }
+                    </LastMessageStyle>
+                  </ChatInterface>
+                </ChatItem>
+              );
+            })}
+          </ChatList>
+      </LeftPanel>
 
+      <RightPanel>
+        {activeChat && (
+          <TitleDirection>
 
-          </div>
+            <Title>
+              {activeChat ? activeChat.name : ""}
+            </Title>
 
+          </TitleDirection>
+        )}
 
-    </div>
-    
-  )
+        <ForText>
+          {activeChat ? (
+            <MessageStyle>
+              {activeChat.messages.map((val, index) => {
+                return (
+
+                  <Message
+                    sender={val.sender}
+                    key={index}
+                  >
+                    {val.text}
+                  </Message>
+
+                );
+              })}
+
+              <div ref={endScroll}></div>
+            </MessageStyle>
+          ) : (
+
+            <SelectChat>
+              Select a chat to start messaging
+            </SelectChat>
+
+          )}
+        </ForText>
+
+        <div className="writeMessages">
+          <InputDirection>
+            <InputDirectionRule>
+
+              <TypeMessage
+                placeholder="Type a message..."
+                disabled={!activeChat}
+                value={text}
+                onChange={(evt) => {
+                  setText(evt.target.value);
+                }}
+                onKeyDown={(evt) => {
+                  if (evt.key === "Enter") {
+                    send();
+                  }
+                }}
+              />
+
+              <SendButton 
+                disabled={!activeChat}
+                onClick={() => {
+                  send();
+                }}
+              >
+                ➤
+              </SendButton>
+            </InputDirectionRule>
+          </InputDirection>
+        </div>
+      </RightPanel>
+    </Main>
+  );
 }
 
-export default App
+export default App;
