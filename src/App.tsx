@@ -23,8 +23,9 @@ import {
   TypeMessage,
   Message,
   SendButton,
+  ChatTime,
+  MessageTime
 } from "./styled";
-
 
 
 function App() {
@@ -34,8 +35,8 @@ function App() {
       id: 1,
       name: "Miqo",
       messages: [
-        { text: "Barev", sender: "other" },
-        { text: "Vonc es?", sender: "me" },
+        { text: "Barev", sender: "other", time: "08:06 PM" },
+        { text: "Vonc es?", sender: "me", time: "08:07 PM" },
       ],
     },
 
@@ -92,6 +93,10 @@ function App() {
         {
           text: text,
           sender: "me",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          })
         },
       ],
     };
@@ -103,6 +108,52 @@ function App() {
     setChats([updatedChat, ...otherChats]);
 
     setText("");
+  }
+
+  function highlightName(name:string){
+    if(searchChat.trim() === "") return name;
+
+    return name.split("").map((letter,index) => {
+      const isMatch = letter
+      .toLowerCase()
+      .includes(searchChat.toLowerCase())
+
+      return (<span 
+        key={index}
+        style={{
+          color: isMatch ? "#13DAEB" :"black"
+        }}
+        >{letter}</span>
+      )
+    })
+  }
+
+  function deleteMessage(messageIndex:number){
+
+    const currentChat = chats.find((val) => val.id === activeChatId);
+    if (!currentChat) {
+      return;
+    }
+
+    const updatedMessage = currentChat.messages.filter((message, index) => {
+      return index !== messageIndex
+    })
+
+    const updatedChat = {
+      ...currentChat,
+      messages: [
+        ...updatedMessage
+      ],
+    };
+
+    setChats(
+      chats.map((val) => {
+        if(val.id === activeChatId){
+          return updatedChat
+        }
+        return val
+      })
+    )
   }
 
   return (
@@ -137,8 +188,16 @@ function App() {
                   <ChatInterface>
                     <ChatTitle>
                       <LeftHelp>
-                        {val.name}
+                        {highlightName(val.name)}
                       </LeftHelp>
+
+                      <ChatTime>
+                        {
+                          val.messages[
+                          val.messages.length - 1
+                          ]?.time
+                        }
+                      </ChatTime>
                     </ChatTitle>
 
                     <LastMessageStyle>
@@ -175,8 +234,16 @@ function App() {
                   <Message
                     sender={val.sender}
                     key={index}
+                    onContextMenu={(evt) => {
+                      evt.preventDefault()
+                      const answer = window.confirm("Do you want to delete message")
+                      if(answer){
+                        deleteMessage(index)
+                      }
+                    }}
                   >
                     {val.text}
+                    <MessageTime>{val.time}</MessageTime>
                   </Message>
 
                 );

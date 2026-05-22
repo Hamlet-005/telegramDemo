@@ -43,26 +43,30 @@ export const Icon = styled.div`
 export const ChatInterface = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
   justify-content: center;
   margin-left: 10px;
   min-width: 0;
 `;
 
 export const ChatTitle = styled.div`
-  margin-left: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 `;
 
 export const LastMessageStyle = styled.div`
   font-size: 14px;
   color: #575757;
-  margin-left: 7px;
+  max-width: 100%;
+  margin-top: 5px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  max-width: 100%;
 `;
 
-export const ChatItem = styled.p`
+export const ChatItem = styled.div`
   display: flex;
   flex-direction: row;
   cursor: pointer;
@@ -163,6 +167,8 @@ export const TypeMessage = styled.input`
 `;
 
 export const Message = styled.p<{ sender: string }>`
+  display: flex;
+  flex-direction: column;
   padding: 10px;
   border-radius: 5px;
   margin: 10px;
@@ -189,3 +195,16 @@ export const SendButton = styled.button`
   cursor: pointer;
   flex-shrink: 0;
 `;
+
+export const MessageTime = styled.small`
+  font-size: 12px;
+  color: #FFA805;
+  align-self: flex-end;
+  margin-top: 5px;
+`
+
+export const ChatTime = styled.small`
+  font-size: 13px;
+  color: #FFA805;
+  align-self: flex-end;
+`
